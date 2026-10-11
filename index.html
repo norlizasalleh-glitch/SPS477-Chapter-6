@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Interactive Quiz</title>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+  };
+</script>
+<style>
+
+:root{ --bg:#0b1220; --panel:#111a2e; --text:#e5e7eb; --muted:#aab3c5; --primary:#6366f1; --primary2:#22c55e; --border:color-mix(in srgb, var(--text) 18%, transparent); --option-bg:color-mix(in srgb, var(--panel) 88%, var(--primary) 12%); --option-hover:color-mix(in srgb, var(--panel) 80%, var(--primary) 20%); --option-active:color-mix(in srgb, var(--panel) 72%, var(--primary) 28%); --radius:16px; --app-font:'Noto Sans', 'Segoe UI', Tahoma, Arial, sans-serif; }
+body{ margin:0; font-family:var(--app-font); background:var(--bg); color:var(--text); min-height:100vh; display:flex; justify-content:center; padding:20px; box-sizing:border-box; }
+button,input,table,th,td,label,h1,h2,h3,p,div{ font-family:var(--app-font); }
+.card{ background:var(--panel); width:100%; max-width:600px; border-radius:var(--radius); padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.3); border:1px solid var(--border); }
+h1{ margin:0 0 10px; font-size:22px; text-align:center; } .desc{ color:var(--muted); font-size:13px; margin-bottom:20px; text-align:center; line-height:1.5; }
+.quizLogoWrap{ width:162px; height:162px; border-radius:50%; overflow:hidden; margin:4px auto 18px; border:1px solid var(--border); background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; }
+.quizLogo{ width:100%; height:100%; object-fit:cover; display:block; }
+.loginIntro{ text-align:center; }
+.loginForm{ width:100%; max-width:420px; margin:0 auto; }
+.loginForm label{ text-align:left; }
+.loginForm input{ text-align:left; }
+.reviewBox{ margin-top:20px; border-top:1px solid var(--border); padding-top:18px; }
+.reviewItem{ border:1px solid var(--border); border-radius:12px; padding:14px; margin-top:12px; background:color-mix(in srgb, var(--panel) 90%, var(--primary) 10%); }
+.badge{ display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:800; margin-bottom:8px; }
+.badge.ok{ background:rgba(34,197,94,.16); color:var(--primary2); }
+.badge.no{ background:rgba(239,68,68,.16); color:#ef4444; }
+.reviewMeta{ font-size:13px; line-height:1.55; color:var(--text); }
+.reviewMeta b{ color:var(--muted); }
+label{ font-size:10px; text-transform:uppercase; font-weight:bold; color:var(--muted); margin-bottom:4px; display:block; }
+.loginForm label{ font-size:12px; }
+.loginForm input{ padding:10px 12px; }
+input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:color-mix(in srgb, var(--panel) 92%, var(--text) 8%); color:var(--text); margin-bottom:15px; box-sizing:border-box; outline:none; }
+.loginForm input{ padding:10px 12px; }
+.timerBox{ width:max-content; min-width:118px; margin:0 auto 14px; padding:8px 16px; border-radius:999px; background:linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, var(--panel) 82%), color-mix(in srgb, var(--primary2) 16%, var(--panel) 84%)); border:1px solid color-mix(in srgb, var(--primary) 42%, var(--border)); color:var(--primary2); font-size:17px; font-weight:800; letter-spacing:.04em; text-align:center; box-shadow:0 8px 22px rgba(0,0,0,.16); }
+.timeEndNotice{ margin:0 0 16px; padding:12px 14px; border-radius:14px; background:color-mix(in srgb, #ef4444 12%, var(--panel) 88%); border:1px solid color-mix(in srgb, #ef4444 46%, var(--border)); color:var(--text); text-align:center; font-size:15px; font-weight:800; }
+.btn{ background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:10px; cursor:pointer; font-weight:800; width:100%; transition:0.2s; box-shadow:0 8px 18px rgba(0,0,0,.22); }
+.btn:hover{ filter:brightness(1.1); }
+.btn-back{ background:linear-gradient(135deg, var(--primary), var(--primary2)); color:#fff; border:1px solid rgba(255,255,255,.35); box-shadow:0 0 0 3px rgba(255,255,255,.10), 0 8px 22px rgba(0,0,0,.25); }
+.btn-back:hover{ filter:brightness(1.18); box-shadow:0 0 0 4px rgba(255,255,255,.14), 0 10px 26px rgba(0,0,0,.30); }
+.opt{ display:block; padding:14px; border:1px solid color-mix(in srgb, var(--primary) 35%, var(--border)); border-radius:10px; margin-bottom:10px; cursor:pointer; transition:0.2s; background:var(--option-bg); color:var(--text); font-weight:600; }
+.opt:hover{ background:var(--option-hover); border-color:color-mix(in srgb, var(--primary) 55%, var(--border)); } .opt.active{ border-color:var(--primary); background:var(--option-active); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 24%, transparent); }
+.bar{ height:6px; background:rgba(255,255,255,0.05); border-radius:3px; margin-bottom:20px; overflow:hidden; }
+.fill{ height:100%; background:var(--primary); transition:width 0.3s; }
+table{ width:100%; border-collapse:collapse; margin-top:15px; font-size:12px; }
+th, td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); }
+@media (min-width: 901px){ body{ overflow:hidden; } .card{ max-height:calc(100vh - 40px); overflow:auto; } }
+
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+const DATA = {"title":"Interactive Quiz","desc":"Answer all questions and review your feedback at the end.","lang":"en","randQ":true,"randA":true,"saveData":true,"classLbl":"Class","sheetUrl":"","logoUrl":"","timerMinutes":0,"hasExplanation":true,"questions":[{"q":"During heavy exercise in a neutral environment, which heat transfer mechanism accounts for the vast majority (~80%) of total body heat dissipation?","choices":["Radiation","Convection","Evaporation","Conduction"],"answerIndex":2,"explain":"Evaporation becomes the predominant method of heat loss during exercise, accounting for roughly 80% of heat dissipation through the phase change of liquid sweat to gas.","rationales":["Radiation is the main form of heat loss at rest (~60%), but its relative contribution drops significantly during intense exercise.","Convection contributes to heat loss via fluid or air movement, but it is secondary to evaporation during heavy exercise.","Evaporation becomes the predominant method of heat loss during exercise, accounting for roughly 80% of heat dissipation through the phase change of liquid sweat to gas.","Conduction requires direct physical contact with another surface and accounts for a minimal percentage of total heat transfer during exercise."]},{"q":"An athlete performs steady-state cycling in a hot, humid environment. Over time, their stroke volume decreases. How does the body compensate to maintain cardiac output, and what is this physiological phenomenon called?","choices":["Heart rate decreases proportionally; this is known as thermal bradycardia.","Skin blood flow decreases rapidly; this is known as peripheral vasoconstriction.","Heart rate progressively increases; this is known as cardiovascular drift.","Pulmonary ventilation decreases; this is known as respiratory depression."],"answerIndex":2,"explain":"To compensate for reduced stroke volume caused by sweating and blood pooling in skin arterioles, heart rate increases to maintain cardiac output, a phenomenon known as cardiovascular drift.","rationales":["Heart rate must increase rather than decrease to maintain cardiac output when stroke volume declines.","In the heat, skin arterioles dilate rather than constrict to facilitate heat dissipation, contributing to reduced venous return.","To compensate for reduced stroke volume caused by sweating and blood pooling in skin arterioles, heart rate increases to maintain cardiac output, a phenomenon known as cardiovascular drift.","Ventilation stays elevated or increases in response to rising core body temperature and metabolic demands during exercise in the heat."]},{"q":"A sports scientist evaluates environmental heat stress using the Wet-Bulb Globe Temperature (WBGT) index formula: WBGT=0.1T\ndb\n​\n\n+0.7T\nwb\n​\n\n+0.2T\ng\n​\n\n. Why is the wet-bulb temperature (T\nwb\n​\n\n) given the greatest weight (70%) in this calculation?","choices":["It measures direct solar radiation, which is the primary cause of core body temperature elevation.","It reflects the air's evaporative cooling potential, which is the body's main mechanism for heat loss during exercise.","It reflects dry air ambient temperature, which dictates the rate of convective heat gain.","It accounts for wind velocity alone, which determines convective fluid currents across the skin surface."],"answerIndex":1,"explain":"Wet-bulb temperature measures humidity and evaporation potential, directly indicating how effectively sweat can evaporate to cool the body.","rationales":["Radiant heat load from solar radiation is measured by the black globe temperature (T\ng\n​\n\n), which accounts for 20% of the WBGT index.","Wet-bulb temperature measures humidity and evaporation potential, directly indicating how effectively sweat can evaporate to cool the body.","Dry-bulb temperature (T\ndb\n​\n\n) measures ambient air temperature and only accounts for 10% of the overall WBGT score.","While wind influences evaporation rate, T\nwb\n​\n\nspecifically measures water vapor pressure and the capacity for evaporative cooling."]},{"q":"During the onset of a fever caused by pyrogens, why does an individual experience shivering and skin vasoconstriction despite having a normal initial core body temperature?","choices":["Skin thermal receptors become permanently desensitized, blocking sensory input to the anterior hypothalamus.","The hypothalamus resets its internal temperature set point upwards, causing the current body temperature to be sensed as cold.","Pyrogens directly inhibit the sympathetic nervous system, preventing sweat glands from releasing acetylcholine.","Sweating mechanisms fail due to immediate damage to eccrine glands by bacterial toxins."],"answerIndex":1,"explain":"Pyrogens reset the hypothalamic set point to a higher temperature; until core temperature rises to meet this new set point, cold-defense mechanisms like shivering and vasoconstriction are triggered.","rationales":["Thermal receptors remain functional, but the brain's central integrator (the hypothalamus) has elevated its reference set point.","Pyrogens reset the hypothalamic set point to a higher temperature; until core temperature rises to meet this new set point, cold-defense mechanisms like shivering and vasoconstriction are triggered.","Pyrogens act centrally on the hypothalamic set point rather than directly blocking peripheral neurotransmitter release at sweat glands.","Eccrine glands remain functional; sweating occurs later when the fever breaks and the hypothalamic set point lowers back to normal."]},{"q":"An endurance runner completes a 14-day heat acclimation protocol. Which physiological adaptation best explains why their risk of sodium and chloride depletion is reduced during subsequent exercise in the heat?","choices":["Peripheral vasoconstriction limits blood supply to the skin, preventing electrolyte excretion.","Sweat rate decreases significantly, reducing the total volume of fluid lost per hour.","Increased aldosterone sensitivity leads to enhanced reabsorption of sodium and chloride in sweat glands.","The body switches to apocrine sweat glands, which secrete purely aqueous fluid free of electrolytes."],"answerIndex":2,"explain":"Heat acclimation increases sweat gland sensitivity to aldosterone, resulting in dilute sweat with lower concentrations of sodium and chloride.","rationales":["Skin vasodilation increases with heat acclimation to enhance convective heat transfer toward the skin surface.","Heat acclimation actually causes an earlier onset of sweating and a higher overall maximal sweat rate to enhance evaporative cooling.","Heat acclimation increases sweat gland sensitivity to aldosterone, resulting in dilute sweat with lower concentrations of sodium and chloride.","Eccrine sweat glands remain the primary glands used for thermoregulation; apocrine glands are not involved in heat-induced thermoregulatory adaptations."]},{"q":"When exposed to cold ambient temperatures, how does the human body alter peripheral blood flow and metabolic heat production to maintain thermal homeostasis?","choices":["Parasympathetic activity causes skin vasodilation to warm peripheral tissues while slowing basal metabolic rate.","Thyroxine and catecholamine levels decrease, shifting energy reliance entirely to anaerobic glycolysis.","Sympathetic activity increases skin vasoconstriction to minimize heat loss while stimulating shivering and non-shivering thermogenesis.","The anterior hypothalamus stimulates sweating to decrease skin temperature and triggers muscle relaxation to conserve glycogen."],"answerIndex":2,"explain":"Cold stress triggers sympathetic pathways that constrict peripheral skin arterioles to conserve heat and induce shivering alongside hormonal metabolic surges (thyroxine and catecholamines).","rationales":["Parasympathetic activity does not mediate cold stress responses, and peripheral skin vasodilation would drastically accelerate body heat loss.","Secretion of thyroxine and catecholamines increases during cold exposure to stimulate non-shivering thermogenesis and elevate resting metabolic rate.","Cold stress triggers sympathetic pathways that constrict peripheral skin arterioles to conserve heat and induce shivering alongside hormonal metabolic surges (thyroxine and catecholamines).","Sweating would cause unwanted evaporative heat loss in the cold, and involuntary muscle shivering (contraction) is activated to generate heat."]},{"q":"At an altitude of 2,210 m (such as Mexico City), the fraction of oxygen in inspired air (F\nIO\n2\n​\n\n​\n\n) remains at approximately 20.9%, yet individuals experience hypoxemia. What is the primary physical cause of this oxygen deficit?","choices":["Lower barometric pressure reduces the partial pressure of oxygen (P\nO\n2\n​\n\n​\n\n), decreasing the diffusion gradient in the lungs.","Increased ambient humidity at high elevations dilutes the concentration of oxygen molecules in inspired air.","Higher elevation causes oxygen molecules to combine with carbon dioxide, preventing binding to hemoglobin.","The percentage of nitrogen in the air increases significantly, displacing oxygen molecules inside the alveoli."],"answerIndex":0,"explain":"Total atmospheric pressure decreases with altitude, which proportionately lowers the partial pressure of oxygen (P O 2 ​ ​ ) despite the fractional gas percentage remaining constant.","rationales":["Total atmospheric pressure decreases with altitude, which proportionately lowers the partial pressure of oxygen (P\nO\n2\n​\n\n​\n\n) despite the fractional gas percentage remaining constant.","Air at high altitude is typically very cold and dry with low water vapor content, not highly humid.","Altitude alters atmospheric pressure, not the chemical molecular binding structure of gaseous oxygen in air.","The percentage composition of atmospheric gases (20.9% O\n2\n​\n\n, 78.1% N\n2\n​\n\n) remains constant regardless of altitude."]},{"q":"During the first 6 to 10 days of acute exposure to moderate altitude (3,000 m), how does the cardiovascular system adjust cardiac output (Q) during submaximal exercise to meet tissue oxygen demand?","choices":["Maximal cardiac output increases above sea level values to overdrive oxygen delivery to active skeletal muscle.","Submaximal heart rate decreases to conserve myocardial oxygen while arterial-venous O\n2\n​\n\ndifference diminishes.","Submaximal stroke volume increases sharply due to rapid plasma volume expansion.","Submaximal heart rate increases significantly to compensate for a reduced stroke volume and lower blood oxygen content."],"answerIndex":3,"explain":"Plasma volume drops early at altitude, lowering stroke volume; to maintain cardiac output and tissue oxygen delivery under lower arterial saturation, submaximal heart rate increases substantially via elevated sympathetic activity.","rationales":["Maximal cardiac output declines or remains blunted at altitude due to reduced maximal heart rate and lowered maximal stroke volume.","Submaximal heart rate must increase rather than decrease to maintain cardiac output when stroke volume and arterial oxygen content decline.","Plasma volume initially decreases due to dry air respiratory water loss and increased urine output, which lowers stroke volume.","Plasma volume drops early at altitude, lowering stroke volume; to maintain cardiac output and tissue oxygen delivery under lower arterial saturation, submaximal heart rate increases substantially via elevated sympathetic activity."]},{"q":"Why is the \"Live High, Train Low\" protocol considered the most effective altitude scheme for improving sea-level performance compared to \"Live High, Train High\"?","choices":["It stimulates erythropoietin (EPO) release and red blood cell production at rest while allowing high training intensity at low altitude.","It prevents initial plasma volume loss while forcing skeletal muscles to rely exclusively on fat oxidation during intense workouts.","Training at low altitude increases mitochondrial degradation and reduces muscle capillary density.","Living at high altitude decreases resting metabolic rate, allowing faster muscle recovery between exercise sessions."],"answerIndex":0,"explain":"Living at altitude induces hypoxia-driven EPO release and red blood cell production, while training at lower elevation maintains oxygen availability necessary to sustain high training workloads without early fatigue.","rationales":["Living at altitude induces hypoxia-driven EPO release and red blood cell production, while training at lower elevation maintains oxygen availability necessary to sustain high training workloads without early fatigue.","Plasma volume decreases initially upon high altitude exposure regardless, and high-intensity exercise relies heavily on carbohydrate breakdown rather than fat oxidation.","High-intensity training at low altitude preserves muscle oxidative capacity and capillary density, avoiding the reduced training intensity and muscle wasting associated with training exclusively at altitude.","Basal metabolic rate increases at high altitude due to elevated thyroxine and catecholamine secretion."]},{"q":"What primary difference exists between the physiological factors reducing VO\n2\n​\n\nmax at moderate altitudes (below 4,000 m) compared to extreme altitudes (above 4,000 m)?","choices":["Below 4,000 m, VO\n2\n​\n\nmax drops due to severe muscle atrophy, while above 4,000 m, VO\n2\n​\n\nmax returns to sea-level values.","Below 4,000 m, reduced arterial oxygen saturation (<br>↓hemoglobin O\n2\n​\n\n) is the main factor, whereas above 4,000 m, a fall in maximal cardiac output also becomes a major contributor.","Below 4,000 m, anaerobic glycolysis is completely blocked, whereas above 4,000 m, lactic acid production drops to zero.","Below 4,000 m, maximal heart rate increases beyond sea-level limits, whereas above 4,000 m, stroke volume doubles."],"answerIndex":1,"explain":"At moderate altitudes, VO 2 ​ max reductions are driven primarily by reduced P O 2 ​ ​ and arterial oxygen saturation; at altitudes exceeding 4,000 m, significant drops in maximal cardiac output further impair VO 2 ​ max.","rationales":["Muscle atrophy takes weeks to develop and is not the primary driver of acute VO\n2\n​\n\nmax reductions; VO\n2\n​\n\nmax continually declines as altitude increases.","At moderate altitudes, VO\n2\n​\n\nmax reductions are driven primarily by reduced P\nO\n2\n​\n\n​\n\nand arterial oxygen saturation; at altitudes exceeding 4,000 m, significant drops in maximal cardiac output further impair VO\n2\n​\n\nmax.","Anaerobic reliance initially increases at altitude, and lactate production during exercise remains elevated compared to sea level for a given matched workload.","Maximal heart rate is reduced at high altitude due to decreased cardiac responsiveness to sympathetic stimulation, and stroke volume drops due to decreased plasma volume."]}]}; 
+const UI = {"name":"Full Name","class":"Class","start":"Start Quiz","next":"Next","back":"Back","finish":"Finish","retake":"Retake","rank":"Top 10 Ranking","saving":"Saving data...","result":"Result","q":"Q","tableName":"Name","tableClass":"Class","percent":"%","alertInfo":"Please fill in your details.","alertChoose":"Please choose an answer.","review":"Answer Review","questionLabel":"Question","answerLabel":"Answer","explanationLabel":"Explanation","correct":"Correct","incorrect":"Incorrect","feedbackCorrect":"Correct answer, no comment.","feedbackWrong":"Your answer does not match the key concept.","noRefNote":"No explanation was found in the uploaded question file.","timeEnd":"Time End"};
+let state = { mode:'login', idx:0, ans:[], name:'', class:'', qs:[], loading:false, ranking:[], endTime:0, remaining:0, timeEnded:false };
+let timerInterval = null;
+function esc(v){ return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function formatTime(ms){ const total = Math.max(0, Math.ceil(ms/1000)); const m = Math.floor(total/60); const s = total % 60; return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0'); }
+function startTimer(){ if(timerInterval) clearInterval(timerInterval); if(!DATA.timerMinutes) return; state.endTime = Date.now() + DATA.timerMinutes * 60000; timerInterval = setInterval(() => { state.remaining = state.endTime - Date.now(); if(state.remaining <= 0){ clearInterval(timerInterval); timerInterval = null; state.timeEnded = true; finish(); } else if(state.mode === 'quiz') { const el = document.getElementById('timerBox'); if(el) el.textContent = formatTime(state.remaining); } }, 1000); }
+function timerHtml(){ return DATA.timerMinutes && state.mode === 'quiz' ? '<div class="timerBox" id="timerBox">' + formatTime(state.endTime - Date.now()) + '</div>' : ''; }
+function buildReview(){
+  return '<div class="reviewBox"><h3 style="text-align:center; margin:0 0 12px;">' + UI.review + '</h3>' +
+    state.qs.map((q,i) => {
+      const picked = state.ans[i];
+      const ok = picked === q.answerIndex;
+      const userAns = picked === null || picked === undefined ? '-' : q.choices[picked];
+      const selectedRationale = q.rationales && picked !== null && picked !== undefined ? q.rationales[picked] : "";
+      const correctRationale = q.rationales ? q.rationales[q.answerIndex] : "";
+      const fb = selectedRationale || correctRationale || q.explain || (ok ? UI.feedbackCorrect : UI.feedbackWrong + " " + UI.noRefNote);
+      return '<div class="reviewItem">' +
+        '<span class="badge ' + (ok ? 'ok' : 'no') + '">' + (ok ? UI.correct : UI.incorrect) + '</span>' +
+        '<div class="reviewMeta"><b>' + UI.questionLabel + ':</b> ' + esc(q.q) + '</div>' +
+        '<div class="reviewMeta"><b>' + UI.answerLabel + ':</b> ' + esc(userAns) + '</div>' +
+        '<div class="reviewMeta"><b>' + UI.explanationLabel + ':</b> ' + esc(fb) + '</div>' +
+      '</div>';
+    }).join('') + '</div>';
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(state.mode==='login'){
+    const logoHtml = DATA.logoUrl ? '<div class="quizLogoWrap"><img class="quizLogo" src="' + esc(DATA.logoUrl) + '" alt="Logo"></div>' : '';
+    app.innerHTML = '<div class="loginIntro">' + logoHtml + '<h1>' + DATA.title + '</h1><p class="desc">' + DATA.desc + '</p></div>' +
+      '<div class="loginForm"><label>' + UI.name + '</label><input type="text" id="u_name" value="' + esc(state.name) + '">' +
+      '<label>' + UI.class + '</label><input type="text" id="u_class" value="' + esc(state.class) + '">' +
+      '<button class="btn" onclick="start()">' + UI.start + '</button></div>';
+  } else if(state.mode==='quiz'){
+    const q = state.qs[state.idx];
+    const backBtn = state.idx > 0 ? '<button class="btn btn-back" style="margin-top:10px;" onclick="back()">' + UI.back + '</button>' : '';
+    const finishBtn = state.idx === state.qs.length - 1 ? '<button class="btn" style="margin-top:10px;" onclick="next()">' + UI.finish + '</button>' : '';
+    app.innerHTML = timerHtml() + '<div class="bar"><div class="fill" style="width:' + ((state.idx)/state.qs.length)*100 + '%"></div></div>' +
+      '<div style="font-size:11px; color:var(--muted); margin-bottom:10px;">' + UI.q + ' ' + (state.idx+1) + ' / ' + state.qs.length + '</div>' +
+      '<h2 style="font-size:17px; margin-bottom:20px;">' + q.q + '</h2>' +
+      q.choices.map((c,i) => '<div class="opt ' + (state.ans[state.idx]===i?'active':'') + '" onclick="setAns(' + i + ')">' + c + '</div>').join('') +
+      finishBtn + backBtn;
+  } else if(state.mode==='result'){
+    let score = state.ans.reduce((acc, a, i) => acc + (a === state.qs[i].answerIndex ? 1 : 0), 0);
+    let pct = Math.round((score/state.qs.length)*100);
+    let html = '<h1>' + UI.result + '</h1>' + (state.timeEnded ? '<div class="timeEndNotice">' + UI.timeEnd + '</div>' : '') + '<div style="font-size:48px; font-weight:900; color:var(--primary2);">' + pct + '% (' + score + '/' + state.qs.length + ')</div>';
+    html += buildReview();
+    if(DATA.saveData){
+      html += '<div style="margin-top:20px; border-top:1px solid var(--border); padding-top:20px;"><h3 style="text-align:center;">' + UI.rank + '</h3>';
+      if(state.loading) html += '<p>' + UI.saving + '</p>';
+      else if(state.ranking.length > 0) {
+        html += '<table><tr><th>#</th><th>' + UI.tableName + '</th><th>' + UI.tableClass + '</th><th>' + UI.percent + '</th></tr>' + 
+          state.ranking.map((r,i) => '<tr><td>' + (i+1) + '</td><td>' + esc(r.name) + '</td><td>' + esc(r.class) + '</td><td>' + esc(r.percent) + '</td></tr>').join('') + '</table>';
+      }
+      html += '</div>';
+    }
+    html += '<button class="btn" style="margin-top:20px;" onclick="location.reload()">' + UI.retake + '</button>';
+    app.innerHTML = html;
+  }
+  if (window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
+}
+function start(){
+  state.name = document.getElementById('u_name').value.trim(); 
+  state.class = document.getElementById('u_class').value.trim();
+  if(!state.name || !state.class) return alert(UI.alertInfo);
+  state.qs = JSON.parse(JSON.stringify(DATA.questions));
+  if(DATA.randQ) state.qs.sort(() => Math.random()-0.5);
+  if(DATA.randA) state.qs.forEach(q => {
+    const originalCorrect = q.choices[q.answerIndex];
+    const rationales = Array.isArray(q.rationales) ? q.rationales : [];
+    const pairs = q.choices.map((choice, idx) => ({ choice, rationale: rationales[idx] || "" }));
+    pairs.sort(() => Math.random()-0.5);
+    q.choices = pairs.map(p => p.choice);
+    q.rationales = pairs.map(p => p.rationale);
+    q.answerIndex = q.choices.indexOf(originalCorrect);
+  });
+  state.ans = new Array(state.qs.length).fill(null);
+  state.timeEnded = false;
+  state.mode = 'quiz'; startTimer(); render();
+}
+function setAns(i){ state.ans[state.idx] = i; if(state.idx < state.qs.length - 1){ state.idx++; } render(); }
+function back(){ if(state.idx > 0){ state.idx--; render(); } }
+function next(){
+  if(state.ans[state.idx]===null) return alert(UI.alertChoose);
+  if(state.idx < state.qs.length - 1){ state.idx++; render(); }
+  else { finish(); }
+}
+async function finish(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+  state.mode = 'result'; render();
+  if(DATA.saveData && DATA.sheetUrl){
+    state.loading = true; render();
+    let score = state.ans.reduce((acc, a, i) => acc + (a === state.qs[i].answerIndex ? 1 : 0), 0);
+    let pct = Math.round((score/state.qs.length)*100);
+    try {
+      await fetch(DATA.sheetUrl, { method:'POST', body: JSON.stringify({name:state.name, class:state.class, score:score, percent:pct}), mode:'no-cors' });
+      setTimeout(async () => {
+        try { const res = await fetch(DATA.sheetUrl); state.ranking = await res.json(); render(); } catch(e){}
+        state.loading = false; render();
+      }, 1500);
+    } catch(e){ state.loading = false; render(); }
+  }
+}
+render();
+</script>
+</body></html>
